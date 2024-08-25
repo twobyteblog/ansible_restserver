@@ -1,0 +1,56 @@
+---
+# tasks file for roles/app_rest-server
+
+- name: Install prerequisite packages.
+  ansible.builtin.apt:
+    name: 
+      - golang-go
+      - apache2-utils
+    state: latest
+    update_cache: yes
+
+- name: Check if executable already exists.
+  stat:
+    path: "{{ executable_path }}"
+  register: executable
+
+- name: Clone rest-server Github repo.
+  ansible.builtin.git:
+    repo: https://github.com/restic/rest-server.git
+    dest: "{{ build_path }}"
+  when: executable.stat.exists == false
+
+- name: Run compilier.
+  ansible.builtin.shell:
+    cmd: CGO_ENABLED=0 go build -o {{ executable_path }} ./cmd/rest-server
+  args:
+      chdir: "{{ build_path }}"
+  when: executable.stat.exists == false
+
+- name: Cleanup /tmp/ directory.
+  ansible.builtin.file:
+    path: "{{ build_path }}"
+    state: absent
+  when: executable.stat.exists == false
+
+- name: Install as systemd service.
+  ansible.builtin.template:
+    src: rest-server.service.j2
+    dest: /etc/systemd/system/rest-server.service
+    mode: '0644'
+    backup: true
+  when: executable.stat.exists == false
+
+- name: Start rest-server service.
+  ansible.builtin.systemd:
+    state: started
+    name: rest-server.service
+  when: executable.stat.exists == false
+
+# Assumes UFW is installed and active as firewall.
+
+  - name: Allow outside communications (8000/tcp)
+  community.general.ufw:
+    rule: allow
+    port: 8000
+    proto: tcp

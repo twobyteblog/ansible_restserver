@@ -1,0 +1,5 @@
+---
+# defaults file for ansible_restserver
+
+# Location where backups will be stored.
+restserver_backup_path: /opt/backups

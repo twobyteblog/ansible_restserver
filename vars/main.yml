@@ -1,0 +1,6 @@
+---
+# vars file for roles/ansible_restserver
+
+# Installation of rest-server.
+build_path: /tmp/rest-server
+executable_path: /usr/local/bin/rest-server
