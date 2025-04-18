@@ -49,7 +49,7 @@
 
 # Assumes UFW is installed and active as firewall.
 
-  - name: Allow outside communications (8000/tcp)
+- name: Allow outside communications (8000/tcp)
   community.general.ufw:
     rule: allow
     port: 8000
